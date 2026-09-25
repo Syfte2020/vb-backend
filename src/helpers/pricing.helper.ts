@@ -23,7 +23,7 @@ export const VENUE_SHIFTS = [
     toTime: '23:00',
   },
   {
-    name: 'Full Day',
+    name: 'full_day',
     shiftKey: 'full_day',
     shiftType: 4,
     fromTime: '00:00',
@@ -105,6 +105,70 @@ export const CATEGORY_CONFIG: Record<string, any> = {
   },
 };
 
+// export function buildPricingArray(
+//   category: string,
+//   pricing: any,
+//   childVenueId: string,
+// ) {
+//   const config = CATEGORY_CONFIG[category];
+
+//   if (!config || config.type !== 'pricing') return [];
+
+//   // ✅ FIX HERE
+//   const result: any[] = [];
+
+//   if (typeof pricing === 'string') {
+//     pricing = JSON.parse(pricing);
+//   }
+
+
+//   for (const item of config.pricing) {
+//   if (item.conditional) {
+//     if (!pricing[item.enabledKey]) continue;
+//   }
+
+//   let amount = 0;
+//   let deposit = 0;
+
+//   // Venue pricing uses shifts
+//   if (category === "venue" && pricing.shifts) {
+//     const shiftKey = item.pricingKey;
+
+//     const shift = pricing.shifts?.[shiftKey];
+
+//     // Skip if shift doesn't exist or isn't enabled
+//     if (!shift?.enabled) continue;
+
+//     amount = Number(shift.price || 0);
+//     deposit = Number(shift.deposit || 0);
+//   } else {
+//     // Other categories use normal pricing fields
+//     amount = Number(pricing[item.pricingKey] || 0);
+
+//     // Existing deposit for non-shift pricing
+//     deposit = Number(pricing.deposit || 0);
+//   }
+
+//   console.log("Pricing Key:", item.pricingKey);
+//   console.log("Pricing:", pricing);
+//   console.log("Amount:", amount);
+//   console.log("Deposit:", deposit);
+//   console.log("Child Venue ID:", childVenueId);
+
+//   if (amount <= 0) continue;
+
+//   result.push({
+//     name: item.name,
+//     category: category,
+//     pricingKey: item.pricingKey,
+//     amount,
+//     deposit: deposit,
+//     childVenueId: childVenueId,
+//   });
+// }
+
+//   return result;
+// }
 export function buildPricingArray(
   category: string,
   pricing: any,
@@ -112,10 +176,15 @@ export function buildPricingArray(
 ) {
   const config = CATEGORY_CONFIG[category];
 
-  if (!config || config.type !== 'pricing') return [];
+  if (!config || config.type !== 'pricing') {
+    return {
+      pricingArray: [],
+      securitySettings: [],
+    };
+  }
 
-  // ✅ FIX HERE
-  const result: any[] = [];
+  const pricingArray: any[] = [];
+  const securitySettings: any[] = [];
 
   if (typeof pricing === 'string') {
     pricing = JSON.parse(pricing);
@@ -126,24 +195,79 @@ export function buildPricingArray(
       if (!pricing[item.enabledKey]) continue;
     }
 
-    const amount = Number(pricing[item.pricingKey] || 0);
+    let amount = 0;
+    let deposit = 0;
+    let deposits = 0;
 
-    console.log(pricing[item.pricingKey]);
-    console.log(pricing);
-    console.log(item.pricingKey);
-    console.log(amount);
-    console.log(childVenueId);
+    // Venue pricing uses shifts
+    if (category === 'venue' && pricing.shifts) {
+      const shiftKey = item.pricingKey;
+      const shift = pricing.shifts?.[shiftKey];
 
-    if (amount <= 0) continue;
+      // Skip if shift doesn't exist or isn't enabled
+      if (!shift?.enabled) continue;
 
-    result.push({
-      name: item.name,
-      category: category,
-      pricingKey: item.pricingKey,
-      amount,
-      childVenueId: childVenueId,
-    });
+      amount = Number(shift.price || 0);
+      deposit = Number(shift.deposit || 0);
+      deposits = 0;
+
+      console.log('Pricing Key:', item.pricingKey);
+      console.log('Shift:', shift);
+      console.log('Amount:', amount);
+      console.log('Deposit:', deposit);
+      console.log('Child Venue ID:', childVenueId);
+
+      if (amount <= 0) continue;
+
+      // Pricing data
+      pricingArray.push({
+        name: item.name,
+        category: category,
+        pricingKey: item.pricingKey,
+        amount,
+        deposits,
+        childVenueId,
+      });
+
+      // Shift-wise security amount
+      const secAmtKey =
+        `secAmtByShift${String(shiftKey).toLowerCase()}`;
+
+      securitySettings.push({
+        childId: childVenueId,
+        group: 'deposits',
+        key: secAmtKey,
+        value: String(deposit),
+      });
+    } else {
+      // Other categories use normal pricing fields
+      amount = Number(pricing[item.pricingKey] || 0);
+
+      // Existing deposit for non-shift pricing
+      deposit = Number(pricing.deposit || 0);
+
+      console.log('Pricing Key:', item.pricingKey);
+      console.log('Pricing:', pricing);
+      console.log('Amount:', amount);
+      console.log('Deposit:', deposit);
+      console.log('Child Venue ID:', childVenueId);
+
+      if (amount <= 0) continue;
+
+      pricingArray.push({
+        name: item.pricingKey,
+       // name: item.name,
+        category: category,
+        pricingKey: item.pricingKey,
+        amount,
+        deposit,
+        childVenueId,
+      });
+    }
   }
 
-  return result;
+  return {
+    pricingArray,
+    securitySettings,
+  };
 }

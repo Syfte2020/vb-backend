@@ -87,55 +87,114 @@ export class NotificationService {
     }
   }
 
-  async all_notifications(userId: any)
-  {
-    const [counts, notifications] = await Promise.all([
-  this.dataSource.query(
-    `
-    SELECT
-      (
-        SELECT COUNT(*)
-        FROM notification_users
-        WHERE user_id = ?
-          AND is_read = 0
-      ) AS notification_count,
+//   async all_notifications(userId: any)
+//   {
+//     const [counts, notifications] = await Promise.all([
+//   this.dataSource.query(
+//     `
+//     SELECT
+//       (
+//         SELECT COUNT(*)
+//         FROM notification_users
+//         WHERE user_id = ?
+//           AND is_read = 0
+//       ) AS notification_count,
 
-      (
-        SELECT COUNT(*)
-        FROM bookings
-        WHERE vendor_id = ?
-          AND is_read = 0
-      ) AS booking_count
-    `,
-    [userId, userId],
-  ),
+//       (
+//         SELECT COUNT(*)
+//         FROM bookings
+//         WHERE vendor_id = ?
+//           AND is_read = 0
+//       ) AS booking_count
+//     `,
+//     [userId, userId],
+//   ),
 
-  this.dataSource.query(
-    `
-    SELECT
-      n.id,
-      n.title,
-      n.message,
-      n.type,
-      n.reference_id,
-      nu.is_read,
-      n.created_at
-    FROM notification_users nu
-    JOIN notifications n
-      ON n.id = nu.notification_id
-    WHERE nu.user_id = ?
-    ORDER BY n.created_at DESC
-    LIMIT 5
-    `,
-    [userId],
-  ),
-]);
+//   this.dataSource.query(
+//     `
+//     SELECT
+//       n.id,
+//       n.title,
+//       n.message,
+//       n.type,
+//       n.reference_id,
+//       nu.is_read,
+//       n.created_at
+//     FROM notification_users nu
+//     JOIN notifications n
+//       ON n.id = nu.notification_id
+//     WHERE nu.user_id = ?
+//     ORDER BY n.created_at DESC
+//     LIMIT 5
+//     `,
+//     [userId],
+//   ),
+// ]);
 
-return {
-  counts: counts[0],
-  notifications,
-};
-  }
+// return {
+//   counts: counts[0],
+//   notifications,
+// };
+//   }
+
+async all_notifications(userId: any) {
+  const [counts, notifications] = await Promise.all([
+    this.dataSource.query(
+      `
+      SELECT
+        (
+          SELECT COUNT(*)
+          FROM notification_users
+          WHERE user_id = ?
+            AND is_read = 0
+        ) AS notification_count,
+
+        (
+          SELECT COUNT(*)
+          FROM bookings
+          WHERE vendor_id = ?
+            AND is_read = 0
+        ) AS booking_count,
+
+        (
+          SELECT COUNT(*)
+          FROM messages m
+          INNER JOIN conversations c
+            ON c.id = m.conversation_id
+          WHERE c.vendor_id = ?
+            AND m.role = 'me'
+            AND m.is_read = 0
+        ) AS message_count
+      `,
+      [userId, userId, userId, userId],
+    ),
+
+    this.dataSource.query(
+      `
+      SELECT
+        n.id,
+        n.title,
+        n.message,
+        n.type,
+        n.reference_id,
+        nu.is_read,
+        n.created_at
+      FROM notification_users nu
+      INNER JOIN notifications n
+        ON n.id = nu.notification_id
+      WHERE nu.user_id = ?
+      ORDER BY n.created_at DESC
+      LIMIT 5
+      `,
+      [userId],
+    ),
+  ]);
+
+  return {
+    counts: counts[0],
+    notifications,
+  };
+}
 
   
 }

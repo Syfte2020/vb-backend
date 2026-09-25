@@ -16,6 +16,7 @@ import { BecomeAHostPartnerModule } from './modules/become_a_host_partner/become
 import { PropertyModule } from './modules/property/property.module';
 
 import { CommonModule } from './common/common.module';
+
 import { LogsModule } from './logs/logs.module';
 import { NotificationModule } from './notifications/notification.module';
 import { StorageModule } from "./common/storage/storage.module";
@@ -66,15 +67,35 @@ import { InvoiceModule } from './modules/invoice/invoice.module';
 import { SurepassModule } from "./modules/integrations/surepass/surepass.module"
 import { CashfreeModule } from "./modules/integrations/cashfree/cashfree.module"
 import { StripeModule } from "./modules/integrations/stripe/Stripe.module"
+import { PaymentsModule } from "./modules/integrations/payments/payments.module"
+import { RazorpayModules } from "./modules/integrations/rozarPayN/razorpay.module"
+import { RecurringPaymentModules } from "./modules/integrations/recurring_payment/recurring_payment.module"
 
 import { CompareModule } from "./modules/compare/compare.module"
 import { PaxModule } from "./modules/pax/pax.module"
 import { RazorpayModule } from "./modules/integrations/rozarPay/razorpay.module"
 import { CheckoutModule } from "./modules/checkout/checkout.module"
+import { TeamModule } from "./modules/teams/team.module"
 
+import { ZohoModule } from './modules/integrations/zoho/zoho.module';
+import { RewardModule } from './modules/rewards/rewards.module';
+import { TwilioModule } from './modules/integrations/twilio/twilio.module';
+import { AccountModule } from './modules/account/account.module';
+import { GitDeployModule } from './modules/git-deploy/git-deploy.module';
+
+import { ScheduleModule } from '@nestjs/schedule';
+import { VendorNotificationModule } from './modules/vendor/vendor_notification/vendor_notification.module';
+import { VendorDashboardModule } from './modules/vendor/vendor_dashboard/vendor_dashboard.module';
+
+import { MembershipModule } from './modules/vendor/Membership/membership.module';
+ //membership.module.ts
+
+import { AccessModule } from './common/access/access.module';
 
 @Module({
   imports: [
+
+    ScheduleModule.forRoot(),
 
     /* CONFIG */
     ConfigModule.forRoot({
@@ -84,11 +105,11 @@ import { CheckoutModule } from "./modules/checkout/checkout.module"
     /* DATABASE */
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: '13.50.209.14',
-      port: 3306,
-      username: 'vb_user',
-      password: 'Syfte_2020',
-      database: 'vb_platform',
+      host: process.env.DB_HOST,
+      port: Number(process.env.DB_PORT || 3306),
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_DATABASE,
       autoLoadEntities: true,
       synchronize: false,
       logging: true,
@@ -156,7 +177,25 @@ import { CheckoutModule } from "./modules/checkout/checkout.module"
     PaxModule,
     RazorpayModule,
 
-    CheckoutModule
+    CheckoutModule,
+    TeamModule,
+
+
+    ZohoModule,
+    RewardModule,
+    TwilioModule,
+
+    AccountModule,
+    GitDeployModule,
+    VendorNotificationModule,
+    VendorDashboardModule,
+
+    PaymentsModule,
+    RazorpayModules,
+    RecurringPaymentModules,
+
+    AccessModule,
+    MembershipModule
 
 
 

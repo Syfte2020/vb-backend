@@ -1,6 +1,7 @@
 import { NestFactory } from "@nestjs/core";
 
 import { AppModule } from "./app.module";
+import { ValidationPipe } from '@nestjs/common';
 
 import {
   FastifyAdapter,
@@ -15,12 +16,25 @@ import path from "path";
 
 async function bootstrap() {
 
+  // const app =
+  //   await NestFactory.create<NestFastifyApplication>(
+  //     AppModule,
+  //     new FastifyAdapter({
+  //     trustProxy: true,
+  //   }),
+  //   );
   const app =
-    await NestFactory.create<NestFastifyApplication>(
-      AppModule,
-      new FastifyAdapter(),
-    );
+  await NestFactory.create<NestFastifyApplication>(
+    AppModule,
+    new FastifyAdapter({
+      trustProxy: true,
+    }),
+    {
+      rawBody: true,
+    },
+  );
 
+ 
   /*
   |--------------------------------------------------------------------------
   | CORS
@@ -29,6 +43,11 @@ async function bootstrap() {
 
   app.enableCors({
     origin: [
+      "https://venuebook.in",
+      "https://admin.venuebook.in",
+      "http://venuebook.in",
+      "https://www.venuebook.in",
+      "https://admin.venuebook.in",
       "http://localhost:3000",
       "http://localhost:3001",
       "http://localhost:3002",
@@ -75,6 +94,12 @@ async function bootstrap() {
     },
   );
 
+  app.useGlobalPipes(new ValidationPipe({
+  whitelist: true,        
+  transform: true,       
+  forbidNonWhitelisted: false,
+}));
+
   /*
   |--------------------------------------------------------------------------
   | START SERVER
@@ -82,7 +107,7 @@ async function bootstrap() {
   */
 
   await app.listen(
-    3000,
+    4000,
     "0.0.0.0",
   );
 
