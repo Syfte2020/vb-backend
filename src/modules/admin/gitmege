@@ -1,0 +1,569 @@
+============================================================
+GIT MERGE DOCUMENTATION
+DEVIL → MAIN
+============================================================
+
+Purpose:
+This document explains the standard and safe process for merging
+the "devil" branch into the "main" branch and pushing the result
+to GitHub.
+
+------------------------------------------------------------
+1. CHECK CURRENT GIT STATUS
+------------------------------------------------------------
+
+Run:
+
+git status
+
+Check your current branch:
+
+git branch
+
+Example:
+
+  backup-main
+  develop1
+  devil
+* main
+
+The "*" indicates the branch you are currently using.
+
+------------------------------------------------------------
+2. GET LATEST INFORMATION FROM GITHUB
+------------------------------------------------------------
+
+Always fetch the latest remote information first:
+
+git fetch origin
+
+
+------------------------------------------------------------
+3. UPDATE THE DEVIL BRANCH
+------------------------------------------------------------
+
+Switch to devil:
+
+git checkout devil
+
+Pull the latest devil changes:
+
+git pull origin devil
+
+
+------------------------------------------------------------
+4. UPDATE THE MAIN BRANCH
+------------------------------------------------------------
+
+Switch to main:
+
+git checkout main
+
+Pull the latest main changes:
+
+git pull origin main
+
+
+------------------------------------------------------------
+5. MERGE DEVIL INTO MAIN
+------------------------------------------------------------
+
+Make sure you are on main:
+
+git checkout main
+
+Merge devil:
+
+git merge devil
+
+
+IMPORTANT:
+
+The direction is:
+
+DEVIL → MAIN
+
+You must run:
+
+git checkout main
+git merge devil
+
+Do NOT run:
+
+git checkout devil
+git merge devil
+
+
+------------------------------------------------------------
+6. IF THE MERGE IS SUCCESSFUL
+------------------------------------------------------------
+
+Git may show:
+
+Fast-forward
+
+OR:
+
+Merge made by the 'ort' strategy.
+
+After a successful merge, push main:
+
+git push origin main
+
+
+------------------------------------------------------------
+7. IF GIT SAYS "ALREADY UP TO DATE"
+------------------------------------------------------------
+
+If you run:
+
+git merge devil
+
+and Git says:
+
+Already up to date.
+
+Check whether devil has commits that main does not have:
+
+git log --oneline main..devil
+
+If commits are displayed, devil has commits that are not in main.
+
+You can also check the remote branches:
+
+git fetch origin
+
+git log --oneline origin/main..origin/devil
+
+If nothing is displayed, Git considers the branches to contain
+the same commits.
+
+
+------------------------------------------------------------
+8. CHECK DIFFERENCES BETWEEN DEVIL AND MAIN
+------------------------------------------------------------
+
+To see commit differences:
+
+git log --oneline main..devil
+
+To see file/code differences:
+
+git diff main..devil
+
+To see remote differences:
+
+git diff origin/main..origin/devil
+
+
+------------------------------------------------------------
+9. MERGE CONFLICT
+------------------------------------------------------------
+
+Sometimes Git will show:
+
+CONFLICT (content): Merge conflict in some-file.ts
+
+Automatic merge failed; fix conflicts and then commit the result.
+
+Run:
+
+git status
+
+Git will show the conflicted files.
+
+Example:
+
+both modified: src/venue/venue.service.ts
+both modified: src/venue/venue.controller.ts
+
+
+------------------------------------------------------------
+10. RESOLVE CONFLICTS IN VS CODE
+------------------------------------------------------------
+
+Open each conflicted file in VS Code.
+
+You may see:
+
+<<<<<<< HEAD
+
+Code from main
+
+=======
+
+Code from devil
+
+>>>>>>> devil
+
+
+Meaning:
+
+HEAD / Current Change = MAIN
+
+Incoming Change = DEVIL
+
+
+VS Code normally provides:
+
+Accept Current Change
+Accept Incoming Change
+Accept Both Changes
+Compare Changes
+
+
+Choose the correct code based on the required application logic.
+
+IMPORTANT:
+
+Remove all conflict markers:
+
+<<<<<<< HEAD
+=======
+>>>>>>> devil
+
+
+------------------------------------------------------------
+11. AFTER FIXING CONFLICTS
+------------------------------------------------------------
+
+Check the status:
+
+git status
+
+After fixing all conflicts, stage the files:
+
+git add .
+
+
+------------------------------------------------------------
+12. COMPLETE THE MERGE
+------------------------------------------------------------
+
+Create the merge commit:
+
+git commit -m "Merge devil into main"
+
+
+Then push:
+
+git push origin main
+
+
+------------------------------------------------------------
+13. IF YOU WANT TO CANCEL THE MERGE
+------------------------------------------------------------
+
+If the conflicts are too complicated or you want to cancel
+the current merge:
+
+git merge --abort
+
+Then check:
+
+git status
+
+This returns the repository to the state before the merge.
+
+
+------------------------------------------------------------
+14. IMPORTANT: REBASE IN PROGRESS
+------------------------------------------------------------
+
+If Git says:
+
+interactive rebase in progress
+
+and:
+
+No commands remaining.
+
+You are currently editing a commit while rebasing.
+
+If everything is correct:
+
+git rebase --continue
+
+If you want to cancel the rebase:
+
+git rebase --abort
+
+
+IMPORTANT:
+
+Finish or abort an active rebase before starting a normal merge.
+
+
+------------------------------------------------------------
+15. COMPLETE SAFE MERGE PROCESS
+------------------------------------------------------------
+
+Use this process when merging devil into main:
+
+STEP 1:
+
+git fetch origin
+
+
+STEP 2:
+
+git checkout devil
+
+
+STEP 3:
+
+git pull origin devil
+
+
+STEP 4:
+
+git checkout main
+
+
+STEP 5:
+
+git pull origin main
+
+
+STEP 6:
+
+git merge devil
+
+
+STEP 7:
+
+If there are conflicts:
+
+git status
+
+Fix the conflicts in VS Code.
+
+
+STEP 8:
+
+git add .
+
+
+STEP 9:
+
+git commit -m "Merge devil into main"
+
+
+STEP 10:
+
+git push origin main
+
+
+------------------------------------------------------------
+16. DAILY DEVELOPMENT WORKFLOW
+------------------------------------------------------------
+
+MORNING:
+
+Update main:
+
+git checkout main
+git pull origin main
+
+
+Update devil:
+
+git checkout devil
+git pull origin devil
+
+
+------------------------------------------------------------
+DURING DEVELOPMENT
+------------------------------------------------------------
+
+Work on the devil branch.
+
+After making changes:
+
+git status
+
+git add .
+
+git commit -m "Update latest changes"
+
+git push origin devil
+
+
+------------------------------------------------------------
+EVENING / RELEASE
+------------------------------------------------------------
+
+Switch to main:
+
+git checkout main
+
+Update main:
+
+git pull origin main
+
+Merge devil:
+
+git merge devil
+
+Push main:
+
+git push origin main
+
+
+------------------------------------------------------------
+17. IMPORTANT TEAM RULE
+------------------------------------------------------------
+
+Before merging devil into main:
+
+ALWAYS:
+
+git checkout main
+git pull origin main
+git merge devil
+git push origin main
+
+
+Do not force push main for normal merge operations.
+
+Avoid:
+
+git push --force
+
+
+Use normal:
+
+git push origin main
+
+
+------------------------------------------------------------
+18. CHECK BEFORE MERGING
+------------------------------------------------------------
+
+Check current branch:
+
+git branch
+
+Check status:
+
+git status
+
+Check commits in devil but not main:
+
+git log --oneline main..devil
+
+Check code differences:
+
+git diff main..devil
+
+
+------------------------------------------------------------
+19. IF DEVIL IS UPDATED ON GITHUB BUT LOCAL DEVIL IS OLD
+------------------------------------------------------------
+
+Run:
+
+git fetch origin
+
+git checkout devil
+
+git pull origin devil
+
+Then:
+
+git checkout main
+
+git pull origin main
+
+git merge devil
+
+git push origin main
+
+
+------------------------------------------------------------
+20. FINAL CHEAT SHEET
+------------------------------------------------------------
+
+Update devil:
+
+git fetch origin
+git checkout devil
+git pull origin devil
+
+
+Update main:
+
+git checkout main
+git pull origin main
+
+
+Merge:
+
+git merge devil
+
+
+If conflict:
+
+git status
+
+Fix conflicts in VS Code.
+
+Then:
+
+git add .
+
+git commit -m "Merge devil into main"
+
+
+Push:
+
+git push origin main
+
+
+------------------------------------------------------------
+21. MERGE DIRECTION
+------------------------------------------------------------
+
+The required merge direction is:
+
+                DEVIL
+                  |
+                  |
+                  | git merge devil
+                  ↓
+                 MAIN
+                  |
+                  |
+                  | git push origin main
+                  ↓
+              GITHUB MAIN
+
+
+------------------------------------------------------------
+22. MOST IMPORTANT COMMANDS
+------------------------------------------------------------
+
+git fetch origin
+
+git checkout devil
+
+git pull origin devil
+
+git checkout main
+
+git pull origin main
+
+git merge devil
+
+git status
+
+git add .
+
+git commit -m "Merge devil into main"
+
+git push origin main
+
+
+============================================================
+END OF DOCUMENTATION
+============================================================
