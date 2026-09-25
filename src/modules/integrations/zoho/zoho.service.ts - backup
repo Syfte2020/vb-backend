@@ -1,0 +1,233 @@
+import { Injectable, BadRequestException } from '@nestjs/common';
+import axios from 'axios';
+
+@Injectable()
+export class ZohoService {
+
+     async generateToken(code: string) {
+
+    const response = await axios.post(
+      `${process.env.ZOHO_ACCOUNTS_URL}/oauth/v2/token`,
+      null,
+      {
+        params: {
+          grant_type: 'authorization_code',
+          client_id: process.env.ZOHO_CLIENT_ID,
+          client_secret: process.env.ZOHO_CLIENT_SECRET,
+          redirect_uri: process.env.ZOHO_REDIRECT_URI,
+          code,
+        },
+      },
+    );
+
+    return response.data;
+  }
+
+  /**
+   * Get Access Token
+   */
+  async getAccessToken(): Promise<string> {
+    try {
+
+      const response = await axios.post(
+        `${process.env.ZOHO_ACCOUNTS_URL}/oauth/v2/token`,
+        null,
+        {
+          params: {
+            refresh_token: process.env.ZOHO_REFRESH_TOKEN,
+            client_id: process.env.ZOHO_CLIENT_ID,
+            client_secret: process.env.ZOHO_CLIENT_SECRET,
+            grant_type: 'refresh_token',
+          },
+        },
+      );
+
+      return response.data.access_token;
+
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+
+  /**
+   * Create Lead
+   */
+  async createLead(body: any) {
+
+    const token = await this.getAccessToken();
+
+    const response = await axios.post(
+      `${process.env.ZOHO_API_URL}/crm/v7/Leads`,
+      {
+        data: [
+          {
+            Last_Name: body.lastName,
+            Company: body.company,
+            Email: body.email,
+            Phone: body.phone,
+          },
+        ],
+      },
+      {
+        headers: {
+          Authorization: `Zoho-oauthtoken ${token}`,
+        },
+      },
+    );
+
+    return response.data;
+  }
+
+  /**
+   * Get Leads
+   */
+  async getLeads() {
+
+    const token = await this.getAccessToken();
+
+    const response = await axios.get(
+      `${process.env.ZOHO_API_URL}/crm/v7/Leads`,
+      {
+        headers: {
+          Authorization: `Zoho-oauthtoken ${token}`,
+        },
+      },
+    );
+
+    return response.data;
+  }
+
+  /**
+   * Get Lead By Id
+   */
+  async getLead(id: string) {
+
+    const token = await this.getAccessToken();
+
+    const response = await axios.get(
+      `${process.env.ZOHO_API_URL}/crm/v7/Leads/${id}`,
+      {
+        headers: {
+          Authorization: `Zoho-oauthtoken ${token}`,
+        },
+      },
+    );
+
+    return response.data;
+  }
+
+  /**
+   * Update Lead
+   */
+  async updateLead(id: string, body: any) {
+
+    const token = await this.getAccessToken();
+
+    const response = await axios.put(
+      `${process.env.ZOHO_API_URL}/crm/v7/Leads`,
+      {
+        data: [
+          {
+            id,
+            Last_Name: body.lastName,
+            Company: body.company,
+            Email: body.email,
+            Phone: body.phone,
+          },
+        ],
+      },
+      {
+        headers: {
+          Authorization: `Zoho-oauthtoken ${token}`,
+        },
+      },
+    );
+
+    return response.data;
+  }
+
+  /**
+   * Delete Lead
+   */
+  async deleteLead(id: string) {
+
+    const token = await this.getAccessToken();
+
+    const response = await axios.delete(
+      `${process.env.ZOHO_API_URL}/crm/v7/Leads/${id}`,
+      {
+        headers: {
+          Authorization: `Zoho-oauthtoken ${token}`,
+        },
+      },
+    );
+
+    return response.data;
+  }
+
+async createBooksCustomer(data: {
+  customerName: string;
+  email?: string;
+  phone?: string;
+  mobile?: string;
+}) {
+  const token = await this.getAccessToken();
+
+  const response = await axios.post(
+    `${process.env.ZOHO_API_URL}/books/v3/contacts`,
+    {
+      contact_name: data.customerName,
+      contact_type: "customer",
+      email: data.email,
+      phone: data.phone,
+      mobile: data.mobile,
+    },
+    {
+      params: {
+        organization_id: process.env.ZOHO_BOOKS_ORGANIZATION_ID,
+      },
+      headers: {
+        Authorization: `Zoho-oauthtoken ${token}`,
+        "Content-Type": "application/json",
+      },
+    },
+  );
+
+  return response.data;
+}
+async createBooking(data: {
+  customerId: string;
+  bookingNo: string;
+  itemId: string;
+  quantity: number;
+  rate: number;
+}) {
+  const token = await this.getAccessToken();
+
+  const response = await axios.post(
+    `${process.env.ZOHO_API_URL}/books/v3/salesorders`,
+    {
+      customer_id: data.customerId,
+      reference_number: data.bookingNo,
+      line_items: [
+        {
+          item_id: data.itemId,
+          quantity: data.quantity,
+          rate: data.rate,
+        },
+      ],
+    },
+    {
+      params: {
+        organization_id: process.env.ZOHO_BOOKS_ORGANIZATION_ID,
+      },
+      headers: {
+        Authorization: `Zoho-oauthtoken ${token}`,
+        "Content-Type": "application/json",
+      },
+    },
+  );
+
+  return response.data;
+}
+}
